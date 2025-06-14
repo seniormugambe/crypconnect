@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { VideoConference } from './VideoConference';
 import { 
   Send, 
   Paperclip, 
@@ -15,10 +15,7 @@ import {
   Video, 
   MoreVertical,
   Eye,
-  Clock,
-  X,
-  Minimize2,
-  Maximize2
+  Clock
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -178,6 +175,7 @@ export const MessagesPage = () => {
 
   const startVideoCall = () => {
     setIsVideoCall(true);
+    setIsPictureInPicture(false);
     toast({
       title: "Video Call Started",
       description: `Calling ${selectedContact?.name}...`,
@@ -414,48 +412,15 @@ export const MessagesPage = () => {
         </div>
       </div>
 
-      {/* Video Call Overlay */}
-      {isVideoCall && (
-        <div className={`absolute inset-0 bg-black ${isPictureInPicture ? 'hidden' : 'flex'} items-center justify-center z-50`}>
-          <div className="text-center">
-            <Avatar className="w-32 h-32 mx-auto mb-4">
-              <AvatarImage src={selectedContact.avatar} alt={selectedContact.name} />
-              <AvatarFallback className="text-4xl">{selectedContact.name.slice(0, 2)}</AvatarFallback>
-            </Avatar>
-            <h3 className="text-2xl font-semibold text-white mb-2">{selectedContact.name}</h3>
-            <p className="text-gray-300 mb-8">Connecting...</p>
-            
-            <div className="flex justify-center space-x-4">
-              <Button variant="ghost" onClick={togglePictureInPicture} className="text-white">
-                <Minimize2 className="w-6 h-6" />
-              </Button>
-              <Button variant="destructive" onClick={endVideoCall}>
-                <X className="w-6 h-6" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Picture-in-Picture */}
-      {isPictureInPicture && (
-        <div className="absolute bottom-4 right-4 w-64 h-48 bg-black rounded-lg overflow-hidden z-40">
-          <div className="relative h-full flex items-center justify-center">
-            <Avatar className="w-16 h-16">
-              <AvatarImage src={selectedContact.avatar} alt={selectedContact.name} />
-              <AvatarFallback>{selectedContact.name.slice(0, 2)}</AvatarFallback>
-            </Avatar>
-            
-            <div className="absolute top-2 right-2 flex space-x-1">
-              <Button variant="ghost" size="sm" onClick={togglePictureInPicture} className="text-white h-6 w-6 p-0">
-                <Maximize2 className="w-4 h-4" />
-              </Button>
-              <Button variant="destructive" size="sm" onClick={endVideoCall} className="h-6 w-6 p-0">
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
+      {/* Video Conference Component */}
+      {selectedContact && (
+        <VideoConference
+          contact={selectedContact}
+          isOpen={isVideoCall}
+          onClose={endVideoCall}
+          isPictureInPicture={isPictureInPicture}
+          onTogglePictureInPicture={togglePictureInPicture}
+        />
       )}
     </div>
   );
