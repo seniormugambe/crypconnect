@@ -25,6 +25,17 @@ const Web3UserProfile = () => {
     window.open(`https://basescan.org/address/${user.address}`, '_blank');
   };
 
+  const getWalletDisplayName = () => {
+    return user.walletType === 'metamask' ? 'MetaMask' : 'Coinbase Wallet';
+  };
+
+  const getWalletIcon = () => {
+    if (user.walletType === 'metamask') {
+      return <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" alt="MetaMask" className="w-3 h-3 mr-1" />;
+    }
+    return <Wallet className="w-3 h-3 mr-1" />;
+  };
+
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center pb-4">
@@ -39,10 +50,16 @@ const Web3UserProfile = () => {
         <CardTitle className="text-xl">
           {user.ensName || `${user.address.slice(0, 6)}...${user.address.slice(-4)}`}
         </CardTitle>
-        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-          <Wallet className="w-3 h-3 mr-1" />
-          Base Network
-        </Badge>
+        <div className="flex justify-center space-x-2">
+          <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+            <Wallet className="w-3 h-3 mr-1" />
+            Base Network
+          </Badge>
+          <Badge variant="secondary" className={user.walletType === 'metamask' ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700"}>
+            {getWalletIcon()}
+            {getWalletDisplayName()}
+          </Badge>
+        </div>
       </CardHeader>
       
       <CardContent className="space-y-4">

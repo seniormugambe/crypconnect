@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { CoinbaseWalletSDK } from '@coinbase/wallet-sdk';
 import { ethers } from 'ethers';
@@ -8,12 +9,13 @@ interface Web3User {
   ensName?: string;
   avatar?: string;
   balance?: string;
+  walletType?: 'metamask' | 'coinbase';
 }
 
 interface Web3ContextType {
   user: Web3User | null;
   isConnecting: boolean;
-  connect: () => Promise<void>;
+  connect: (walletType?: 'metamask' | 'coinbase') => Promise<void>;
   disconnect: () => void;
   provider: ethers.BrowserProvider | null;
   signer: ethers.JsonRpcSigner | null;
@@ -32,20 +34,45 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
   const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
   const [signer, setSigner] = useState<ethers.JsonRpcSigner | null>(null);
 
-  const connect = async () => {
+  const connectMetaMask = async () => {
+    if (!window.ethereum) {
+      throw new Error('MetaMask is not installed. Please install MetaMask and try again.');
+    }
+
+    const ethereum = window.ethereum;
+    const accounts = await ethereum.request({ method: 'eth_requestAccounts' }) as string[];
+    
+    if (!accounts || accounts.length === 0) {
+      throw new Error('No accounts found');
+    }
+
+    return { ethereum, accounts, walletType: 'metamask' as const };
+  };
+
+  const connectCoinbaseWallet = async () => {
+    const ethereum = coinbaseWallet.makeWeb3Provider();
+    const accounts = await ethereum.request({ method: 'eth_requestAccounts' }) as string[];
+    
+    if (!accounts || accounts.length === 0) {
+      throw new Error('No accounts found');
+    }
+
+    return { ethereum, accounts, walletType: 'coinbase' as const };
+  };
+
+  const connect = async (walletType: 'metamask' | 'coinbase' = 'metamask') => {
     try {
       setIsConnecting(true);
       
-      // Try Coinbase Wallet first (Base minikit)
-      const ethereum = coinbaseWallet.makeWeb3Provider();
+      let connectionResult;
       
-      // Request account access
-      const accounts = await ethereum.request({ method: 'eth_requestAccounts' }) as string[];
-      
-      if (!accounts || accounts.length === 0) {
-        throw new Error('No accounts found');
+      if (walletType === 'metamask') {
+        connectionResult = await connectMetaMask();
+      } else {
+        connectionResult = await connectCoinbaseWallet();
       }
 
+      const { ethereum, accounts, walletType: connectedWalletType } = connectionResult;
       const address = accounts[0];
       const ethersProvider = new ethers.BrowserProvider(ethereum);
       const ethersSigner = await ethersProvider.getSigner();
@@ -66,7 +93,8 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
         address,
         ensName: ensName || undefined,
         balance: formattedBalance,
-        avatar: `https://api.dicebear.com/7.x/identicon/svg?seed=${address}`
+        avatar: `https://api.dicebear.com/7.x/identicon/svg?seed=${address}`,
+        walletType: connectedWalletType
       };
 
       setUser(userData);
@@ -76,10 +104,11 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
       // Store connection state
       localStorage.setItem('web3_connected', 'true');
       localStorage.setItem('web3_user', JSON.stringify(userData));
+      localStorage.setItem('web3_wallet_type', connectedWalletType);
 
       toast({
         title: "Wallet Connected",
-        description: `Connected to ${address.slice(0, 6)}...${address.slice(-4)}`,
+        description: `Connected to ${address.slice(0, 6)}...${address.slice(-4)} via ${connectedWalletType === 'metamask' ? 'MetaMask' : 'Coinbase Wallet'}`,
       });
 
     } catch (error: any) {
@@ -100,6 +129,7 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
     setSigner(null);
     localStorage.removeItem('web3_connected');
     localStorage.removeItem('web3_user');
+    localStorage.removeItem('web3_wallet_type');
     
     toast({
       title: "Wallet Disconnected",
@@ -111,15 +141,22 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const wasConnected = localStorage.getItem('web3_connected');
     const storedUser = localStorage.getItem('web3_user');
+    const storedWalletType = localStorage.getItem('web3_wallet_type') as 'metamask' | 'coinbase';
     
     if (wasConnected && storedUser) {
       try {
         const userData = JSON.parse(storedUser);
         setUser(userData);
+        
+        // Try to reconnect to the same wallet type
+        if (storedWalletType) {
+          connect(storedWalletType).catch(console.error);
+        }
       } catch (error) {
         console.error('Failed to restore user session:', error);
         localStorage.removeItem('web3_connected');
         localStorage.removeItem('web3_user');
+        localStorage.removeItem('web3_wallet_type');
       }
     }
   }, []);

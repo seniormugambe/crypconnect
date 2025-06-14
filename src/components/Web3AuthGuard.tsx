@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { Button } from '@/components/ui/button';
@@ -15,6 +14,14 @@ const Web3AuthGuard = ({ children }: Web3AuthGuardProps) => {
   if (user) {
     return <>{children}</>;
   }
+
+  const handleMetaMaskConnect = () => {
+    connect('metamask');
+  };
+
+  const handleCoinbaseConnect = () => {
+    connect('coinbase');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-cyan-50 flex items-center justify-center p-4">
@@ -37,12 +44,31 @@ const Web3AuthGuard = ({ children }: Web3AuthGuardProps) => {
                 </div>
                 <CardTitle className="text-2xl">Connect Your Wallet</CardTitle>
                 <CardDescription className="text-base">
-                  Sign in with your Web3 wallet to access secure messaging
+                  Choose your preferred wallet to sign in
                 </CardDescription>
               </CardHeader>
-              <CardContent className="text-center">
+              <CardContent className="space-y-4">
                 <Button 
-                  onClick={connect} 
+                  onClick={handleMetaMaskConnect} 
+                  disabled={isConnecting}
+                  size="lg"
+                  className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105"
+                >
+                  {isConnecting ? (
+                    <div className="flex items-center">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Connecting...
+                    </div>
+                  ) : (
+                    <div className="flex items-center">
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" alt="MetaMask" className="w-5 h-5 mr-2" />
+                      Connect with MetaMask
+                    </div>
+                  )}
+                </Button>
+                
+                <Button 
+                  onClick={handleCoinbaseConnect} 
                   disabled={isConnecting}
                   size="lg"
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105"
@@ -55,12 +81,13 @@ const Web3AuthGuard = ({ children }: Web3AuthGuardProps) => {
                   ) : (
                     <div className="flex items-center">
                       <Wallet className="w-5 h-5 mr-2" />
-                      Connect Wallet
+                      Connect with Coinbase Wallet
                     </div>
                   )}
                 </Button>
-                <p className="text-sm text-gray-500 mt-4">
-                  Supports Coinbase Wallet, MetaMask, and other Web3 wallets
+                
+                <p className="text-sm text-gray-500 mt-4 text-center">
+                  Secure Web3 authentication with your private keys
                 </p>
               </CardContent>
             </Card>
