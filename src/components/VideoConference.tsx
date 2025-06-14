@@ -2,6 +2,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { ParticipantGrid } from './ParticipantGrid';
 import { 
   Mic, 
   MicOff, 
@@ -13,9 +15,25 @@ import {
   Minimize2,
   Maximize2,
   Settings,
-  Users
+  Users,
+  UserPlus,
+  MessageSquare,
+  Hand,
+  Grid3X3,
+  MoreVertical
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+
+interface Participant {
+  id: string;
+  name: string;
+  avatar: string;
+  isVideoEnabled: boolean;
+  isAudioEnabled: boolean;
+  isScreenSharing: boolean;
+  isSpeaking: boolean;
+  isPinned: boolean;
+}
 
 interface VideoConferenceProps {
   contact: {
@@ -39,27 +57,74 @@ export const VideoConference: React.FC<VideoConferenceProps> = ({
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [isHandRaised, setIsHandRaised] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'speaker'>('grid');
+  const [participants, setParticipants] = useState<Participant[]>([]);
   
   const localVideoRef = useRef<HTMLVideoElement>(null);
-  const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
 
-  // Simulate call connection after 3 seconds
+  // Initialize participants when call starts
   useEffect(() => {
     if (isOpen && !isPictureInPicture) {
+      const mockParticipants: Participant[] = [
+        {
+          id: 'me',
+          name: 'You',
+          avatar: '/placeholder.svg',
+          isVideoEnabled: true,
+          isAudioEnabled: true,
+          isScreenSharing: false,
+          isSpeaking: false,
+          isPinned: false
+        },
+        {
+          id: contact.id,
+          name: contact.name,
+          avatar: contact.avatar,
+          isVideoEnabled: true,
+          isAudioEnabled: true,
+          isScreenSharing: false,
+          isSpeaking: true,
+          isPinned: false
+        },
+        {
+          id: '3',
+          name: 'Alex.eth',
+          avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=alex',
+          isVideoEnabled: false,
+          isAudioEnabled: true,
+          isScreenSharing: false,
+          isSpeaking: false,
+          isPinned: false
+        },
+        {
+          id: '4',
+          name: 'Sarah.base',
+          avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=sarah',
+          isVideoEnabled: true,
+          isAudioEnabled: false,
+          isScreenSharing: false,
+          isSpeaking: false,
+          isPinned: false
+        }
+      ];
+      setParticipants(mockParticipants);
+
       const timer = setTimeout(() => {
         setIsConnected(true);
         toast({
-          title: "Call Connected",
-          description: `Connected to ${contact.name}`,
+          title: "Meeting Started",
+          description: `Connected with ${mockParticipants.length} participants`,
         });
-      }, 3000);
+      }, 2000);
 
       return () => clearTimeout(timer);
     }
-  }, [isOpen, isPictureInPicture, contact.name]);
+  }, [isOpen, isPictureInPicture, contact]);
 
   // Call duration timer
   useEffect(() => {
@@ -107,22 +172,16 @@ export const VideoConference: React.FC<VideoConferenceProps> = ({
 
   const toggleVideo = () => {
     setIsVideoEnabled(!isVideoEnabled);
-    if (localStreamRef.current) {
-      const videoTrack = localStreamRef.current.getVideoTracks()[0];
-      if (videoTrack) {
-        videoTrack.enabled = !isVideoEnabled;
-      }
-    }
+    setParticipants(prev => prev.map(p => 
+      p.id === 'me' ? { ...p, isVideoEnabled: !isVideoEnabled } : p
+    ));
   };
 
   const toggleAudio = () => {
     setIsAudioEnabled(!isAudioEnabled);
-    if (localStreamRef.current) {
-      const audioTrack = localStreamRef.current.getAudioTracks()[0];
-      if (audioTrack) {
-        audioTrack.enabled = !isAudioEnabled;
-      }
-    }
+    setParticipants(prev => prev.map(p => 
+      p.id === 'me' ? { ...p, isAudioEnabled: !isAudioEnabled } : p
+    ));
   };
 
   const toggleScreenShare = async () => {
@@ -133,30 +192,55 @@ export const VideoConference: React.FC<VideoConferenceProps> = ({
           audio: true 
         });
         setIsScreenSharing(true);
-        toast({
-          title: "Screen Sharing Started",
-          description: "Your screen is now being shared",
-        });
+        setParticipants(prev => prev.map(p => 
+          p.id === 'me' ? { ...p, isScreenSharing: true } : p
+        ));
         
-        // Stop screen sharing when user stops it from browser
         screenStream.getVideoTracks()[0].onended = () => {
           setIsScreenSharing(false);
+          setParticipants(prev => prev.map(p => 
+            p.id === 'me' ? { ...p, isScreenSharing: false } : p
+          ));
         };
       } else {
         setIsScreenSharing(false);
-        toast({
-          title: "Screen Sharing Stopped",
-          description: "Screen sharing has been disabled",
-        });
+        setParticipants(prev => prev.map(p => 
+          p.id === 'me' ? { ...p, isScreenSharing: false } : p
+        ));
       }
     } catch (err) {
       console.error('Error sharing screen:', err);
-      toast({
-        title: "Screen Share Error",
-        description: "Unable to share screen",
-        variant: "destructive",
-      });
     }
+  };
+
+  const toggleHandRaise = () => {
+    setIsHandRaised(!isHandRaised);
+    toast({
+      title: isHandRaised ? "Hand Lowered" : "Hand Raised",
+      description: isHandRaised ? "You lowered your hand" : "You raised your hand",
+    });
+  };
+
+  const togglePin = (participantId: string) => {
+    setParticipants(prev => prev.map(p => ({
+      ...p,
+      isPinned: p.id === participantId ? !p.isPinned : false
+    })));
+  };
+
+  const kickParticipant = (participantId: string) => {
+    setParticipants(prev => prev.filter(p => p.id !== participantId));
+    toast({
+      title: "Participant Removed",
+      description: "Participant has been removed from the meeting",
+    });
+  };
+
+  const inviteParticipant = () => {
+    toast({
+      title: "Invite Link Copied",
+      description: "Meeting invite link copied to clipboard",
+    });
   };
 
   const endCall = () => {
@@ -165,11 +249,8 @@ export const VideoConference: React.FC<VideoConferenceProps> = ({
     }
     setIsConnected(false);
     setCallDuration(0);
+    setParticipants([]);
     onClose();
-    toast({
-      title: "Call Ended",
-      description: `Call with ${contact.name} ended`,
-    });
   };
 
   const formatDuration = (seconds: number) => {
@@ -185,25 +266,13 @@ export const VideoConference: React.FC<VideoConferenceProps> = ({
     return (
       <div className="fixed bottom-4 right-4 w-64 h-48 bg-black rounded-lg overflow-hidden z-50 shadow-2xl">
         <div className="relative h-full">
-          {isVideoEnabled ? (
-            <video
-              ref={localVideoRef}
-              autoPlay
-              muted
-              playsInline
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-900">
-              <Avatar className="w-16 h-16">
-                <AvatarImage src={contact.avatar} alt={contact.name} />
-                <AvatarFallback>{contact.name.slice(0, 2)}</AvatarFallback>
-              </Avatar>
-            </div>
-          )}
+          <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <span className="text-white text-sm">Multi-user Meeting</span>
+          </div>
           
-          <div className="absolute top-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
-            {formatDuration(callDuration)}
+          <div className="absolute top-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded flex items-center space-x-1">
+            <Users className="w-3 h-3" />
+            <span>{participants.length}</span>
           </div>
           
           <div className="absolute top-2 right-2 flex space-x-1">
@@ -230,17 +299,17 @@ export const VideoConference: React.FC<VideoConferenceProps> = ({
               variant="ghost"
               size="sm"
               onClick={toggleAudio}
-              className={`h-8 w-8 p-0 ${!isAudioEnabled ? 'bg-red-600 hover:bg-red-700' : 'bg-white bg-opacity-20 hover:bg-white hover:bg-opacity-30'} text-white`}
+              className={`h-6 w-6 p-0 ${!isAudioEnabled ? 'bg-red-600 hover:bg-red-700' : 'bg-white bg-opacity-20 hover:bg-white hover:bg-opacity-30'} text-white`}
             >
-              {isAudioEnabled ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+              {isAudioEnabled ? <Mic className="w-3 h-3" /> : <MicOff className="w-3 h-3" />}
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={toggleVideo}
-              className={`h-8 w-8 p-0 ${!isVideoEnabled ? 'bg-red-600 hover:bg-red-700' : 'bg-white bg-opacity-20 hover:bg-white hover:bg-opacity-30'} text-white`}
+              className={`h-6 w-6 p-0 ${!isVideoEnabled ? 'bg-red-600 hover:bg-red-700' : 'bg-white bg-opacity-20 hover:bg-white hover:bg-opacity-30'} text-white`}
             >
-              {isVideoEnabled ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
+              {isVideoEnabled ? <Video className="w-3 h-3" /> : <VideoOff className="w-3 h-3" />}
             </Button>
           </div>
         </div>
@@ -254,21 +323,40 @@ export const VideoConference: React.FC<VideoConferenceProps> = ({
       {/* Header */}
       <div className="p-4 bg-black bg-opacity-50 text-white flex justify-between items-center">
         <div className="flex items-center space-x-3">
-          <Avatar className="w-10 h-10">
-            <AvatarImage src={contact.avatar} alt={contact.name} />
-            <AvatarFallback>{contact.name.slice(0, 2)}</AvatarFallback>
-          </Avatar>
-          <div>
-            <h3 className="font-semibold">{contact.name}</h3>
-            <p className="text-sm text-gray-300">
-              {isConnected ? `Connected - ${formatDuration(callDuration)}` : 'Connecting...'}
-            </p>
+          <div className="flex items-center space-x-2">
+            <Users className="w-5 h-5" />
+            <span className="font-semibold">Meeting</span>
+            <Badge className="bg-green-600">{participants.length} participants</Badge>
+          </div>
+          <div className="text-sm text-gray-300">
+            {isConnected ? formatDuration(callDuration) : 'Connecting...'}
           </div>
         </div>
         
         <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="sm" className="text-white">
-            <Users className="w-5 h-5" />
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={inviteParticipant}
+            className="text-white"
+          >
+            <UserPlus className="w-5 h-5" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setShowChat(!showChat)}
+            className="text-white"
+          >
+            <MessageSquare className="w-5 h-5" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setViewMode(viewMode === 'grid' ? 'speaker' : 'grid')}
+            className="text-white"
+          >
+            <Grid3X3 className="w-5 h-5" />
           </Button>
           <Button variant="ghost" size="sm" className="text-white">
             <Settings className="w-5 h-5" />
@@ -279,55 +367,36 @@ export const VideoConference: React.FC<VideoConferenceProps> = ({
         </div>
       </div>
 
-      {/* Video Area */}
-      <div className="flex-1 relative">
-        {/* Remote Video (Main) */}
-        <div className="w-full h-full flex items-center justify-center bg-gray-900">
+      {/* Main Content */}
+      <div className="flex-1 flex">
+        {/* Video Area */}
+        <div className="flex-1 p-4">
           {isConnected ? (
-            <div className="text-center">
-              <Avatar className="w-32 h-32 mx-auto mb-4">
-                <AvatarImage src={contact.avatar} alt={contact.name} />
-                <AvatarFallback className="text-4xl">{contact.name.slice(0, 2)}</AvatarFallback>
-              </Avatar>
-              <p className="text-white text-lg">{contact.name}</p>
-              <p className="text-gray-400">Camera is off</p>
-            </div>
-          ) : (
-            <div className="text-center">
-              <div className="animate-pulse">
-                <Avatar className="w-32 h-32 mx-auto mb-4">
-                  <AvatarImage src={contact.avatar} alt={contact.name} />
-                  <AvatarFallback className="text-4xl">{contact.name.slice(0, 2)}</AvatarFallback>
-                </Avatar>
-              </div>
-              <p className="text-white text-lg">Connecting to {contact.name}...</p>
-            </div>
-          )}
-        </div>
-
-        {/* Local Video (Small overlay) */}
-        <div className="absolute top-4 right-4 w-48 h-36 bg-gray-800 rounded-lg overflow-hidden">
-          {isVideoEnabled ? (
-            <video
-              ref={localVideoRef}
-              autoPlay
-              muted
-              playsInline
-              className="w-full h-full object-cover mirror"
-              style={{ transform: 'scaleX(-1)' }}
+            <ParticipantGrid
+              participants={participants}
+              onTogglePin={togglePin}
+              onKickParticipant={kickParticipant}
+              isHost={true}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-800">
-              <VideoOff className="w-8 h-8 text-gray-400" />
+            <div className="w-full h-full flex items-center justify-center">
+              <div className="text-center">
+                <div className="animate-pulse mb-4">
+                  <Users className="w-16 h-16 text-white mx-auto" />
+                </div>
+                <p className="text-white text-lg">Connecting to meeting...</p>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Screen sharing indicator */}
-        {isScreenSharing && (
-          <div className="absolute top-4 left-4 bg-green-600 text-white px-3 py-1 rounded-full text-sm flex items-center space-x-2">
-            <Monitor className="w-4 h-4" />
-            <span>Screen Sharing</span>
+        {/* Chat Sidebar */}
+        {showChat && (
+          <div className="w-80 bg-gray-900 border-l border-gray-700 p-4">
+            <h3 className="text-white font-semibold mb-4">Chat</h3>
+            <div className="text-gray-400 text-sm">
+              Chat feature coming soon...
+            </div>
           </div>
         )}
       </div>
@@ -360,6 +429,15 @@ export const VideoConference: React.FC<VideoConferenceProps> = ({
             className={`w-14 h-14 rounded-full ${isScreenSharing ? 'bg-green-600 hover:bg-green-700' : 'bg-white bg-opacity-20 hover:bg-white hover:bg-opacity-30'} text-white`}
           >
             <Monitor className="w-6 h-6" />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="lg"
+            onClick={toggleHandRaise}
+            className={`w-14 h-14 rounded-full ${isHandRaised ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-white bg-opacity-20 hover:bg-white hover:bg-opacity-30'} text-white`}
+          >
+            <Hand className="w-6 h-6" />
           </Button>
 
           <Button
