@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { CoinbaseWalletSDK } from '@coinbase/wallet-sdk';
 import { ethers } from 'ethers';
@@ -24,8 +23,7 @@ const Web3Context = createContext<Web3ContextType | null>(null);
 
 const coinbaseWallet = new CoinbaseWalletSDK({
   appName: 'Base Messaging Platform',
-  appLogoUrl: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=64&h=64&fit=crop&crop=center',
-  darkMode: false
+  appLogoUrl: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=64&h=64&fit=crop&crop=center'
 });
 
 export const Web3Provider = ({ children }: { children: ReactNode }) => {
@@ -39,12 +37,12 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
       setIsConnecting(true);
       
       // Try Coinbase Wallet first (Base minikit)
-      const ethereum = coinbaseWallet.makeWeb3Provider('https://mainnet.base.org', 8453);
+      const ethereum = coinbaseWallet.makeWeb3Provider();
       
       // Request account access
-      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+      const accounts = await ethereum.request({ method: 'eth_requestAccounts' }) as string[];
       
-      if (accounts.length === 0) {
+      if (!accounts || accounts.length === 0) {
         throw new Error('No accounts found');
       }
 
