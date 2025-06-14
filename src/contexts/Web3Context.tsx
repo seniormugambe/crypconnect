@@ -1,0 +1,149 @@
+
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { CoinbaseWalletSDK } from '@coinbase/wallet-sdk';
+import { ethers } from 'ethers';
+import { toast } from '@/hooks/use-toast';
+
+interface Web3User {
+  address: string;
+  ensName?: string;
+  avatar?: string;
+  balance?: string;
+}
+
+interface Web3ContextType {
+  user: Web3User | null;
+  isConnecting: boolean;
+  connect: () => Promise<void>;
+  disconnect: () => void;
+  provider: ethers.BrowserProvider | null;
+  signer: ethers.JsonRpcSigner | null;
+}
+
+const Web3Context = createContext<Web3ContextType | null>(null);
+
+const coinbaseWallet = new CoinbaseWalletSDK({
+  appName: 'Base Messaging Platform',
+  appLogoUrl: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=64&h=64&fit=crop&crop=center',
+  darkMode: false
+});
+
+export const Web3Provider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<Web3User | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
+  const [signer, setSigner] = useState<ethers.JsonRpcSigner | null>(null);
+
+  const connect = async () => {
+    try {
+      setIsConnecting(true);
+      
+      // Try Coinbase Wallet first (Base minikit)
+      const ethereum = coinbaseWallet.makeWeb3Provider('https://mainnet.base.org', 8453);
+      
+      // Request account access
+      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+      
+      if (accounts.length === 0) {
+        throw new Error('No accounts found');
+      }
+
+      const address = accounts[0];
+      const ethersProvider = new ethers.BrowserProvider(ethereum);
+      const ethersSigner = await ethersProvider.getSigner();
+      
+      // Get balance
+      const balance = await ethersProvider.getBalance(address);
+      const formattedBalance = ethers.formatEther(balance);
+
+      // Try to get ENS name (will work on mainnet)
+      let ensName;
+      try {
+        ensName = await ethersProvider.lookupAddress(address);
+      } catch (error) {
+        console.log('ENS lookup failed:', error);
+      }
+
+      const userData: Web3User = {
+        address,
+        ensName: ensName || undefined,
+        balance: formattedBalance,
+        avatar: `https://api.dicebear.com/7.x/identicon/svg?seed=${address}`
+      };
+
+      setUser(userData);
+      setProvider(ethersProvider);
+      setSigner(ethersSigner);
+      
+      // Store connection state
+      localStorage.setItem('web3_connected', 'true');
+      localStorage.setItem('web3_user', JSON.stringify(userData));
+
+      toast({
+        title: "Wallet Connected",
+        description: `Connected to ${address.slice(0, 6)}...${address.slice(-4)}`,
+      });
+
+    } catch (error: any) {
+      console.error('Connection failed:', error);
+      toast({
+        title: "Connection Failed",
+        description: error.message || "Failed to connect wallet",
+        variant: "destructive",
+      });
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  const disconnect = () => {
+    setUser(null);
+    setProvider(null);
+    setSigner(null);
+    localStorage.removeItem('web3_connected');
+    localStorage.removeItem('web3_user');
+    
+    toast({
+      title: "Wallet Disconnected",
+      description: "You have been logged out",
+    });
+  };
+
+  // Auto-connect on app start if previously connected
+  useEffect(() => {
+    const wasConnected = localStorage.getItem('web3_connected');
+    const storedUser = localStorage.getItem('web3_user');
+    
+    if (wasConnected && storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+      } catch (error) {
+        console.error('Failed to restore user session:', error);
+        localStorage.removeItem('web3_connected');
+        localStorage.removeItem('web3_user');
+      }
+    }
+  }, []);
+
+  return (
+    <Web3Context.Provider value={{
+      user,
+      isConnecting,
+      connect,
+      disconnect,
+      provider,
+      signer
+    }}>
+      {children}
+    </Web3Context.Provider>
+  );
+};
+
+export const useWeb3 = () => {
+  const context = useContext(Web3Context);
+  if (!context) {
+    throw new Error('useWeb3 must be used within Web3Provider');
+  }
+  return context;
+};
