@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Web3Provider } from '@/contexts/Web3Context';
 import Web3AuthGuard from '@/components/Web3AuthGuard';
@@ -288,7 +289,7 @@ const Index = () => {
             currentPage={currentPage} 
             onPageChange={setCurrentPage} 
           />
-          <main className="flex-1 overflow-hidden">
+          <main className="flex-1 overflow-y-auto">
             {renderPage()}
           </main>
         </div>
