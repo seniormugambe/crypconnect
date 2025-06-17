@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Web3Provider } from '@/contexts/Web3Context';
 import Web3AuthGuard from '@/components/Web3AuthGuard';
@@ -6,6 +5,8 @@ import Web3Sidebar from '@/components/Web3Sidebar';
 import Web3UserProfile from '@/components/Web3UserProfile';
 import { MessagesPage } from '@/components/MessagesPage';
 import { VideoConference } from '@/components/VideoConference';
+import { ScheduleMeetingModal } from '@/components/ScheduleMeetingModal';
+import { JoinMeetingModal } from '@/components/JoinMeetingModal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +26,8 @@ const Index = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [isVideoConferenceOpen, setIsVideoConferenceOpen] = useState(false);
   const [isPictureInPicture, setIsPictureInPicture] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
 
   // Mock data for recent meetings
   const recentMeetings = [
@@ -109,7 +112,7 @@ const Index = () => {
           </Card>
 
           <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer border-2 border-green-100 hover:border-green-300">
-            <CardContent className="p-6 text-center">
+            <CardContent className="p-6 text-center" onClick={() => setIsScheduleModalOpen(true)}>
               <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Plus className="w-8 h-8 text-white" />
               </div>
@@ -119,7 +122,7 @@ const Index = () => {
           </Card>
 
           <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer border-2 border-purple-100 hover:border-purple-300">
-            <CardContent className="p-6 text-center">
+            <CardContent className="p-6 text-center" onClick={() => setIsJoinModalOpen(true)}>
               <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="w-8 h-8 text-white" />
               </div>
@@ -301,6 +304,19 @@ const Index = () => {
           onClose={handleCloseVideoCall}
           isPictureInPicture={isPictureInPicture}
           onTogglePictureInPicture={handleTogglePictureInPicture}
+        />
+
+        {/* Schedule Meeting Modal */}
+        <ScheduleMeetingModal
+          isOpen={isScheduleModalOpen}
+          onClose={() => setIsScheduleModalOpen(false)}
+        />
+
+        {/* Join Meeting Modal */}
+        <JoinMeetingModal
+          isOpen={isJoinModalOpen}
+          onClose={() => setIsJoinModalOpen(false)}
+          onJoinMeeting={handleStartVideoCall}
         />
       </Web3AuthGuard>
     </Web3Provider>
