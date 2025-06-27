@@ -19,4 +19,21 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          web3: ['ethers', 'wagmi'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-button']
+        }
+      }
+    }
+  },
+  preview: {
+    port: 8080,
+    host: true
+  }
 }));

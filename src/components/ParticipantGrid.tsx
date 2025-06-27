@@ -1,19 +1,8 @@
-
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Mic, MicOff, Video, VideoOff, Pin, MoreVertical, Crown } from 'lucide-react';
-
-interface Participant {
-  id: string;
-  name: string;
-  avatar: string;
-  isVideoEnabled: boolean;
-  isAudioEnabled: boolean;
-  isScreenSharing: boolean;
-  isSpeaking: boolean;
-  isPinned: boolean;
-}
+import { Participant } from '@/types/participant';
 
 interface ParticipantGridProps {
   participants: Participant[];

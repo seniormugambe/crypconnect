@@ -38,18 +38,7 @@ import {
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabaseClient';
-
-interface Participant {
-  id: string;
-  name: string;
-  avatar: string;
-  isVideoEnabled?: boolean;
-  isAudioEnabled?: boolean;
-  isScreenSharing?: boolean;
-  isSpeaking?: boolean;
-  isPinned?: boolean;
-  isPremium?: boolean;
-}
+import { Participant } from '@/types/participant';
 
 interface VideoConferenceProps {
   contact: { id: string; name: string; avatar: string };
@@ -117,7 +106,17 @@ export const VideoConference: React.FC<VideoConferenceProps> = ({
         if (participantsError) {
           console.error('Error fetching participants:', participantsError);
         } else {
-          setParticipants(participantsData || []);
+          setParticipants((participantsData || []).map((p: any) => ({
+            id: p.id,
+            name: p.name || 'Unknown',
+            avatar: p.avatar || '',
+            isVideoEnabled: p.isVideoEnabled ?? true,
+            isAudioEnabled: p.isAudioEnabled ?? true,
+            isScreenSharing: p.isScreenSharing ?? false,
+            isSpeaking: p.isSpeaking ?? false,
+            isPinned: p.isPinned ?? false,
+            isPremium: p.isPremium ?? false,
+          })));
         }
 
         const { data: messagesData, error: messagesError } = await supabase
@@ -232,7 +231,7 @@ export const VideoConference: React.FC<VideoConferenceProps> = ({
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isConnected, isPremium, premiumFeaturesUsed, callDuration]);
+  }, [isConnected, isPremium, premiumFeaturesUsed]);
 
   // Premium: Start AI Transcription
   const startTranscription = () => {
@@ -564,6 +563,11 @@ export const VideoConference: React.FC<VideoConferenceProps> = ({
       title: "📋 Invite Link Copied",
       description: "Share this link to invite participants",
     });
+    
+    // Automatically navigate to Messages page after inviting
+    setTimeout(() => {
+      window.location.href = '/messages';
+    }, 1500); // Small delay to let user see the toast notification
   };
 
   const endCall = () => {

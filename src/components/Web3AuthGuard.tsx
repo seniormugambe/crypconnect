@@ -10,6 +10,17 @@ interface Web3AuthGuardProps {
 
 const Web3AuthGuard = ({ children }: Web3AuthGuardProps) => {
   const { user, isConnecting, connect } = useWeb3();
+  const [hasAttemptedAutoConnect, setHasAttemptedAutoConnect] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!user && !isConnecting && !hasAttemptedAutoConnect && !localStorage.getItem('web3_just_disconnected')) {
+      setHasAttemptedAutoConnect(true);
+      localStorage.removeItem('web3_connected');
+      localStorage.removeItem('web3_user');
+      localStorage.removeItem('web3_wallet_type');
+      connect('metamask');
+    }
+  }, [user, isConnecting, hasAttemptedAutoConnect]);
 
   if (user) {
     return <>{children}</>;

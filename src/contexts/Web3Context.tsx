@@ -105,6 +105,8 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem('web3_connected', 'true');
       localStorage.setItem('web3_user', JSON.stringify(userData));
       localStorage.setItem('web3_wallet_type', connectedWalletType);
+      // Clear disconnect flag after successful connect
+      localStorage.removeItem('web3_just_disconnected');
 
       toast({
         title: "Wallet Connected",
@@ -131,6 +133,8 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('web3_connected');
     localStorage.removeItem('web3_user');
     localStorage.removeItem('web3_wallet_type');
+    // Set disconnect flag
+    localStorage.setItem('web3_just_disconnected', 'true');
     
     toast({
       title: "Wallet Disconnected",
@@ -144,7 +148,7 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
     const storedUser = localStorage.getItem('web3_user');
     const storedWalletType = localStorage.getItem('web3_wallet_type') as 'metamask' | 'coinbase';
     
-    if (wasConnected && storedUser) {
+    if (wasConnected && storedUser && !user && !isConnecting) {
       try {
         const userData = JSON.parse(storedUser);
         setUser(userData);
@@ -160,7 +164,7 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
         localStorage.removeItem('web3_wallet_type');
       }
     }
-  }, []);
+  }, [user, isConnecting]);
 
   return (
     <Web3Context.Provider value={{

@@ -26,18 +26,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-
-interface Participant {
-  id: string;
-  name: string;
-  avatar: string;
-  isVideoEnabled: boolean;
-  isAudioEnabled: boolean;
-  isScreenSharing: boolean;
-  isSpeaking: boolean;
-  isPinned: boolean;
-  isPremium?: boolean;
-}
+import { Participant } from '@/types/participant';
 
 interface PremiumFeaturesProps {
   isPremium: boolean;

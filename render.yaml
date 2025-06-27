@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: crypconnect
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_APP_TITLE
+        value: CrypConnect
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html 

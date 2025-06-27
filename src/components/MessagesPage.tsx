@@ -35,6 +35,11 @@ export const MessagesPage = () => {
     inviteCodes[code] = currentUser;
     setInviteLink(`${window.location.origin}/chat/invite/${code}`);
     setError('');
+    
+    // Automatically navigate to Messages page after generating invite link
+    setTimeout(() => {
+      window.location.href = '/messages';
+    }, 1500); // Small delay to let user see the generated link
   };
 
   const handleStartChat = () => {
