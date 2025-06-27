@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Web3Provider } from '@/contexts/Web3Context';
 import Web3AuthGuard from '@/components/Web3AuthGuard';
 import Web3Sidebar from '@/components/Web3Sidebar';
@@ -23,46 +22,83 @@ import {
   Shield
 } from 'lucide-react';
 
-const Index = () => {
+interface IndexProps {
+  hasKey: boolean;
+  user: any;
+  checkingKey: boolean;
+}
+
+const Index: React.FC<IndexProps> = ({ hasKey, user, checkingKey }) => {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [isVideoConferenceOpen, setIsVideoConferenceOpen] = useState(false);
   const [isPictureInPicture, setIsPictureInPicture] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
 
-  // Mock data for recent meetings
-  const recentMeetings = [
+  // Recent meetings as state
+  const [recentMeetings, setRecentMeetings] = useState([
     {
       id: '1',
-      title: 'Weekly Team Sync',
-      time: '2 hours ago',
-      participants: 5,
-      duration: '45 min'
+      title: 'Matricop Launch Party',
+      time: 'Just now',
+      participants: 12,
+      duration: '1 hr'
     },
     {
       id: '2',
-      title: 'Project Review',
-      time: 'Yesterday',
-      participants: 3,
-      duration: '30 min'
+      title: 'DAO Governance Call',
+      time: 'Today, 10:00 AM',
+      participants: 8,
+      duration: '50 min'
     }
-  ];
+  ]);
 
-  // Mock data for upcoming meetings
-  const upcomingMeetings = [
+  // Upcoming meetings as state
+  const [upcomingMeetings, setUpcomingMeetings] = useState([
     {
       id: '1',
-      title: 'Client Presentation',
-      time: 'Today, 3:00 PM',
-      participants: ['alice.eth', 'bob.base', 'charlie.op']
+      title: 'Web3 Community AMA',
+      time: 'Tomorrow, 5:00 PM',
+      participants: ['satoshi.eth', 'vitalik.eth', 'ava.sol']
     },
     {
       id: '2',
-      title: 'Daily Standup',
-      time: 'Tomorrow, 9:00 AM',
-      participants: ['team.dao', 'dev.eth']
+      title: 'Product Feedback Session',
+      time: 'Friday, 2:00 PM',
+      participants: ['alice.eth', 'bob.base']
     }
-  ];
+  ]);
+
+  // Create a stable meeting ID
+  const meetingId = useMemo(() => {
+    // Generate a proper UUID for Supabase
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }, []);
+
+  // Callback to add a new meeting
+  const handleScheduleMeeting = (meeting) => {
+    setUpcomingMeetings((prev) => [
+      { ...meeting, id: Math.random().toString(36).substr(2, 9) },
+      ...prev
+    ]);
+  };
+
+  // Mark an upcoming meeting as completed
+  const handleCompleteMeeting = (meeting) => {
+    setUpcomingMeetings((prev) => prev.filter((m) => m.id !== meeting.id));
+    setRecentMeetings((prev) => [
+      {
+        ...meeting,
+        time: 'Just now',
+        duration: meeting.duration || 'N/A',
+      },
+      ...prev
+    ]);
+  };
 
   const handleStartVideoCall = () => {
     setIsVideoConferenceOpen(true);
@@ -84,9 +120,9 @@ const Index = () => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Welcome to Web3 Conference
+              Welcome to Matricop Connect
             </h1>
-            <p className="text-gray-600 text-lg mt-2">Connect, collaborate, and communicate securely</p>
+            <p className="text-gray-600 text-lg mt-2">Your gateway to seamless, secure, and decentralized meetings. Experience the future of collaboration today!</p>
           </div>
           <div className="flex items-center space-x-4">
             <Badge className="bg-green-100 text-green-800 border-green-200 px-4 py-2">
@@ -107,8 +143,8 @@ const Index = () => {
               <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Video className="w-8 h-8 text-white" />
               </div>
-              <h3 className="font-bold text-xl mb-2">Start Meeting</h3>
-              <p className="text-gray-600">Begin an instant video conference</p>
+              <h3 className="font-bold text-xl mb-2">Start Instant Room</h3>
+              <p className="text-gray-600">Launch a new video room in seconds</p>
             </CardContent>
           </Card>
 
@@ -117,8 +153,8 @@ const Index = () => {
               <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Plus className="w-8 h-8 text-white" />
               </div>
-              <h3 className="font-bold text-xl mb-2">Schedule Meeting</h3>
-              <p className="text-gray-600">Plan a future conference call</p>
+              <h3 className="font-bold text-xl mb-2">Book a Session</h3>
+              <p className="text-gray-600">Schedule a meeting with your team or clients</p>
             </CardContent>
           </Card>
 
@@ -127,8 +163,8 @@ const Index = () => {
               <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="w-8 h-8 text-white" />
               </div>
-              <h3 className="font-bold text-xl mb-2">Join Meeting</h3>
-              <p className="text-gray-600">Enter with meeting ID</p>
+              <h3 className="font-bold text-xl mb-2">Enter Room</h3>
+              <p className="text-gray-600">Join with a unique room code</p>
             </CardContent>
           </Card>
 
@@ -137,8 +173,8 @@ const Index = () => {
               <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Calendar className="w-8 h-8 text-white" />
               </div>
-              <h3 className="font-bold text-xl mb-2">My Calendar</h3>
-              <p className="text-gray-600">View scheduled meetings</p>
+              <h3 className="font-bold text-xl mb-2">My Events</h3>
+              <p className="text-gray-600">See all your upcoming and past events</p>
             </CardContent>
           </Card>
         </div>
@@ -213,7 +249,7 @@ const Index = () => {
                   <div key={meeting.id} className="p-4 bg-green-50 rounded-xl border border-green-100">
                     <h4 className="font-semibold text-gray-900 mb-2">{meeting.title}</h4>
                     <p className="text-gray-600 text-sm mb-3">{meeting.time}</p>
-                    <div className="flex -space-x-2">
+                    <div className="flex -space-x-2 mb-2">
                       {meeting.participants.slice(0, 3).map((participant, index) => (
                         <Avatar key={index} className="w-8 h-8 border-2 border-white">
                           <AvatarImage src={`https://api.dicebear.com/7.x/identicon/svg?seed=${participant}`} />
@@ -228,6 +264,9 @@ const Index = () => {
                         </div>
                       )}
                     </div>
+                    <Button size="sm" variant="outline" className="mt-2" onClick={() => handleCompleteMeeting(meeting)}>
+                      Mark as Completed
+                    </Button>
                   </div>
                 ))}
                 {upcomingMeetings.length === 0 && (
@@ -285,10 +324,7 @@ const Index = () => {
     <Web3Provider>
       <Web3AuthGuard>
         <div className="flex h-screen bg-gray-50">
-          <Web3Sidebar 
-            currentPage={currentPage} 
-            onPageChange={setCurrentPage} 
-          />
+          <Web3Sidebar />
           <main className="flex-1 overflow-y-auto">
             {renderPage()}
           </main>
@@ -297,7 +333,7 @@ const Index = () => {
         {/* Video Conference Component */}
         <VideoConference
           contact={{
-            id: 'meeting-room',
+            id: meetingId,
             name: 'Conference Room',
             avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=conference'
           }}
@@ -305,12 +341,14 @@ const Index = () => {
           onClose={handleCloseVideoCall}
           isPictureInPicture={isPictureInPicture}
           onTogglePictureInPicture={handleTogglePictureInPicture}
+          isPremium={hasKey}
         />
 
         {/* Schedule Meeting Modal */}
         <ScheduleMeetingModal
           isOpen={isScheduleModalOpen}
           onClose={() => setIsScheduleModalOpen(false)}
+          onSchedule={handleScheduleMeeting}
         />
 
         {/* Join Meeting Modal */}

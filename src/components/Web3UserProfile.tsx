@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -47,9 +46,9 @@ const Web3UserProfile = () => {
             </AvatarFallback>
           </Avatar>
         </div>
-        <CardTitle className="text-xl">
+        {/* <CardTitle className="text-xl">
           {user.ensName || `${user.address.slice(0, 6)}...${user.address.slice(-4)}`}
-        </CardTitle>
+        </CardTitle> */}
         <div className="flex justify-center space-x-2">
           <Badge variant="secondary" className="bg-blue-100 text-blue-700">
             <Wallet className="w-3 h-3 mr-1" />
@@ -63,6 +62,7 @@ const Web3UserProfile = () => {
       </CardHeader>
       
       <CardContent className="space-y-4">
+        {/*
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Wallet Address</label>
           <div className="flex items-center space-x-2">
@@ -77,6 +77,7 @@ const Web3UserProfile = () => {
             </Button>
           </div>
         </div>
+        */}
 
         {user.balance && (
           <div className="space-y-2">

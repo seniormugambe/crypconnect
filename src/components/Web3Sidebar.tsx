@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -6,14 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MessageCircle, Settings, User, Wallet, Copy } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { Link, useLocation } from 'react-router-dom';
 
-interface Web3SidebarProps {
-  currentPage: string;
-  onPageChange: (page: string) => void;
-}
-
-const Web3Sidebar = ({ currentPage, onPageChange }: Web3SidebarProps) => {
+const Web3Sidebar = () => {
   const { user } = useWeb3();
+  const location = useLocation();
 
   const copyAddress = () => {
     if (user) {
@@ -27,20 +23,29 @@ const Web3Sidebar = ({ currentPage, onPageChange }: Web3SidebarProps) => {
 
   const menuItems = [
     {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: MessageCircle,
+      path: '/dashboard',
+    },
+    {
       id: 'messages',
       label: 'Messages',
       icon: MessageCircle,
+      path: '/messages',
       badge: '3'
     },
     {
       id: 'profile',
       label: 'Profile',
-      icon: User
+      icon: User,
+      path: '/profile',
     },
     {
       id: 'settings',
       label: 'Settings',
-      icon: Settings
+      icon: Settings,
+      path: '/settings',
     }
   ];
 
@@ -85,39 +90,38 @@ const Web3Sidebar = ({ currentPage, onPageChange }: Web3SidebarProps) => {
             </div>
           </div>
           
-          {user.balance && (
+          {typeof user.balance === "number" && (
             <div className="mt-3 px-3 py-2 bg-gray-50 rounded-lg">
               <p className="text-xs text-gray-600">Balance</p>
-              <p className="text-sm font-medium">{parseFloat(user.balance).toFixed(4)} ETH</p>
+              <p className="text-sm font-medium">{user.balance.toFixed(4)} ETH</p>
             </div>
           )}
         </div>
       )}
-
-      {/* Navigation Menu */}
       <nav className="flex-1 p-4">
         <div className="space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
+            const isActive = location.pathname === item.path;
             return (
-              <Button
-                key={item.id}
-                variant={currentPage === item.id ? "default" : "ghost"}
-                className={`w-full justify-start h-12 ${
-                  currentPage === item.id 
-                    ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white" 
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-                onClick={() => onPageChange(item.id)}
-              >
-                <Icon className="w-5 h-5 mr-3" />
-                <span className="flex-1 text-left">{item.label}</span>
-                {item.badge && (
-                  <Badge variant="secondary" className="ml-auto bg-red-100 text-red-700">
-                    {item.badge}
-                  </Badge>
-                )}
-              </Button>
+              <Link to={item.path} key={item.id} className="block">
+                <Button
+                  variant={isActive ? "default" : "ghost"}
+                  className={`w-full justify-start h-12 ${
+                    isActive 
+                      ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white" 
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <Icon className="w-5 h-5 mr-3" />
+                  <span className="flex-1 text-left">{item.label}</span>
+                  {item.badge && (
+                    <Badge variant="secondary" className="ml-auto bg-red-100 text-red-700">
+                      {item.badge}
+                    </Badge>
+                  )}
+                </Button>
+              </Link>
             );
           })}
         </div>

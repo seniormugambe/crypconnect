@@ -1,5 +1,4 @@
-
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { CoinbaseWalletSDK } from '@coinbase/wallet-sdk';
 import { ethers } from 'ethers';
 import { toast } from '@/hooks/use-toast';
@@ -60,7 +59,8 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
     return { ethereum, accounts, walletType: 'coinbase' as const };
   };
 
-  const connect = async (walletType: 'metamask' | 'coinbase' = 'metamask') => {
+  const connect = useCallback(async (walletType: 'metamask' | 'coinbase' = 'metamask') => {
+    if (isConnecting) return;
     try {
       setIsConnecting(true);
       
@@ -111,17 +111,18 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
         description: `Connected to ${address.slice(0, 6)}...${address.slice(-4)} via ${connectedWalletType === 'metamask' ? 'MetaMask' : 'Coinbase Wallet'}`,
       });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Connection failed:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to connect wallet";
       toast({
         title: "Connection Failed",
-        description: error.message || "Failed to connect wallet",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
       setIsConnecting(false);
     }
-  };
+  }, []);
 
   const disconnect = () => {
     setUser(null);

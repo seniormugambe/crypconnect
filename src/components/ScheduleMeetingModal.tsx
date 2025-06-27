@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,11 +16,13 @@ import { toast } from '@/hooks/use-toast';
 interface ScheduleMeetingModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSchedule?: (meeting: any) => void;
 }
 
 export const ScheduleMeetingModal: React.FC<ScheduleMeetingModalProps> = ({
   isOpen,
-  onClose
+  onClose,
+  onSchedule
 }) => {
   const [meetingTitle, setMeetingTitle] = useState('');
   const [meetingDate, setMeetingDate] = useState('');
@@ -39,12 +40,22 @@ export const ScheduleMeetingModal: React.FC<ScheduleMeetingModalProps> = ({
       return;
     }
 
-    // Generate a meeting ID
-    const meetingId = Math.random().toString(36).substr(2, 9);
-    
+    // Prepare meeting object
+    const meeting = {
+      title: meetingTitle,
+      time: `${meetingDate} ${meetingTime}`,
+      participants: [], // You can enhance this to add real participants
+      duration: `${duration} min`,
+      description,
+    };
+
+    if (onSchedule) {
+      onSchedule(meeting);
+    }
+
     toast({
-      title: "📅 Meeting Scheduled!",
-      description: `Meeting "${meetingTitle}" scheduled for ${meetingDate} at ${meetingTime}. Meeting ID: ${meetingId}`,
+      title: "\ud83d\udcc5 Meeting Scheduled!",
+      description: `Meeting \"${meetingTitle}\" scheduled for ${meetingDate} at ${meetingTime}.`,
     });
 
     // Reset form
