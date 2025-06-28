@@ -38,7 +38,7 @@ export const MessagesPage = () => {
     
     // Automatically navigate to Messages page after generating invite link
     setTimeout(() => {
-      window.location.href = '/messages';
+      navigate('/messages');
     }, 1500); // Small delay to let user see the generated link
   };
 
@@ -47,7 +47,7 @@ export const MessagesPage = () => {
       setError('Please enter a wallet address or username.');
       return;
     }
-    window.location.href = `/chat/${input.trim()}`;
+    navigate(`/chat/${input.trim()}`);
   };
 
   return (

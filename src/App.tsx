@@ -320,6 +320,7 @@ const AppWithWeb3 = () => {
   const { user } = useWeb3();
   const [hasKey, setHasKey] = React.useState(false);
   const [checkingKey, setCheckingKey] = React.useState(false);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     loadUnlockScript();
@@ -356,22 +357,11 @@ const AppWithWeb3 = () => {
             <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-8">
               <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Welcome to crypconnect!</h1>
               <p className="text-lg text-gray-700 mb-8">Connect, collaborate, and communicate securely on the Base network.</p>
-              {/* User Info */}
-              {/*
-              <div className="mb-8 p-4 bg-white/80 rounded shadow flex items-center space-x-4">
-                <span className="font-semibold text-blue-700">Wallet:</span>
-                {user && user.address ? (
-                  <span className="font-mono text-gray-800">{user.address}</span>
-                ) : (
-                  <span className="text-gray-500">Not connected</span>
-                )}
-              </div>
-              */}
               {/* Quick Actions */}
               <div className="flex space-x-4 mb-8">
-                <Button onClick={() => window.location.href = "/dashboard"}>Go to Dashboard</Button>
-                <Button onClick={() => window.location.href = "/dashboard?startMeeting=true"} variant="secondary">Start Meeting</Button>
-                <Button onClick={() => window.location.href = "/dashboard?joinMeeting=true"} variant="outline">Join Meeting</Button>
+                <Button onClick={() => navigate("/dashboard")}>Go to Dashboard</Button>
+                <Button onClick={() => navigate("/dashboard?startMeeting=true")} variant="secondary">Start Meeting</Button>
+                <Button onClick={() => navigate("/dashboard?joinMeeting=true")} variant="outline">Join Meeting</Button>
               </div>
               {/* Recent Activity */}
               <div className="w-full max-w-md bg-white/80 rounded shadow p-6">

@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ParticipantGrid } from './ParticipantGrid';
 import { PremiumFeatures } from './PremiumFeatures';
+import { useNavigate } from 'react-router-dom';
 import { 
   Mic, 
   MicOff, 
@@ -92,6 +93,8 @@ export const VideoConference: React.FC<VideoConferenceProps> = ({
   const effectNodeRef = useRef<AudioNode | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
+
+  const navigate = useNavigate();
 
   // Fetch participants and messages from Supabase
   useEffect(() => {
@@ -566,7 +569,7 @@ export const VideoConference: React.FC<VideoConferenceProps> = ({
     
     // Automatically navigate to Messages page after inviting
     setTimeout(() => {
-      window.location.href = '/messages';
+      navigate('/messages');
     }, 1500); // Small delay to let user see the toast notification
   };
 
