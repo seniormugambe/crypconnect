@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           vendor: ['react', 'react-dom'],
           web3: ['ethers', 'wagmi'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-button']
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-slot', '@radix-ui/react-avatar']
         }
       }
     }
