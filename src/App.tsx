@@ -349,59 +349,59 @@ const AppWithWeb3 = () => {
   ]);
 
   return (
-    <BrowserRouter>
-      <AppLayout navigate={navigate}>
-        <Routes>
-          <Route path="/" element={
-            <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-8">
-              <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Welcome to crypconnect!</h1>
-              <p className="text-lg text-gray-700 mb-8">Connect, collaborate, and communicate securely on the Base network.</p>
-              {/* Quick Actions */}
-              <div className="flex space-x-4 mb-8">
-                <Button onClick={() => navigate("/dashboard")}>Go to Dashboard</Button>
-                <Button onClick={() => navigate("/dashboard?startMeeting=true")} variant="secondary">Start Meeting</Button>
-                <Button onClick={() => navigate("/dashboard?joinMeeting=true")} variant="outline">Join Meeting</Button>
-              </div>
-              {/* Recent Activity */}
-              <div className="w-full max-w-md bg-white/80 rounded shadow p-6">
-                <h2 className="text-xl font-bold mb-4 text-blue-700">Recent Activity</h2>
-                <ul className="space-y-2">
-                  {recentActivity.map((item, idx) => (
-                    <li key={idx} className="flex justify-between items-center border-b pb-2 last:border-b-0">
-                      <span className="font-semibold text-gray-800">{item.type}:</span>
-                      <span className="text-gray-600">{item.detail}</span>
-                      <span className="text-xs text-gray-400">{item.time}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+    <AppLayout navigate={navigate}>
+      <Routes>
+        <Route path="/" element={
+          <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-8">
+            <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Welcome to crypconnect!</h1>
+            <p className="text-lg text-gray-700 mb-8">Connect, collaborate, and communicate securely on the Base network.</p>
+            {/* Quick Actions */}
+            <div className="flex space-x-4 mb-8">
+              <Button onClick={() => navigate("/dashboard")}>Go to Dashboard</Button>
+              <Button onClick={() => navigate("/dashboard?startMeeting=true")} variant="secondary">Start Meeting</Button>
+              <Button onClick={() => navigate("/dashboard?joinMeeting=true")} variant="outline">Join Meeting</Button>
             </div>
-          } />
-          <Route path="/dashboard" element={<Index hasKey={hasKey} user={user} checkingKey={checkingKey} />} />
-          <Route path="/messages" element={<MessagesPage />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/chat/invite/:code" element={<ChatInviteHandler />} />
-          <Route path="/chat/:target" element={<ChatDirectHandler />} />
-          <Route path="/chat/session/:sessionId" element={<ChatSessionHandler />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </AppLayout>
-    </BrowserRouter>
+            {/* Recent Activity */}
+            <div className="w-full max-w-md bg-white/80 rounded shadow p-6">
+              <h2 className="text-xl font-bold mb-4 text-blue-700">Recent Activity</h2>
+              <ul className="space-y-2">
+                {recentActivity.map((item, idx) => (
+                  <li key={idx} className="flex justify-between items-center border-b pb-2 last:border-b-0">
+                    <span className="font-semibold text-gray-800">{item.type}:</span>
+                    <span className="text-gray-600">{item.detail}</span>
+                    <span className="text-xs text-gray-400">{item.time}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        } />
+        <Route path="/dashboard" element={<Index hasKey={hasKey} user={user} checkingKey={checkingKey} />} />
+        <Route path="/messages" element={<MessagesPage />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/chat/invite/:code" element={<ChatInviteHandler />} />
+        <Route path="/chat/:target" element={<ChatDirectHandler />} />
+        <Route path="/chat/session/:sessionId" element={<ChatSessionHandler />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </AppLayout>
   );
 };
 
 const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <Web3Provider>
-          <AppWithWeb3 />
-        </Web3Provider>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <Web3Provider>
+            <AppWithWeb3 />
+          </Web3Provider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </BrowserRouter>
   );
 };
 
