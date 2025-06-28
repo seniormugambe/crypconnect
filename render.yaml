@@ -16,4 +16,10 @@ services:
     headers:
       - path: /*
         name: Cache-Control
-        value: no-cache 
+        value: no-cache
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff 
