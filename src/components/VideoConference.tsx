@@ -561,16 +561,15 @@ export const VideoConference: React.FC<VideoConferenceProps> = ({
 
   const inviteParticipant = () => {
     const inviteCode = Math.random().toString(36).substring(2, 8);
-    navigator.clipboard.writeText(`${window.location.origin}/chat/invite/${inviteCode}`);
+    // Generate video conference invite link with meeting ID
+    const videoInviteLink = `${window.location.origin}/dashboard?joinMeeting=true&meetingId=${meetingId}&inviteCode=${inviteCode}`;
+    navigator.clipboard.writeText(videoInviteLink);
     toast({
-      title: "📋 Invite Link Copied",
-      description: "Share this link to invite participants",
+      title: "📋 Video Conference Invite Copied",
+      description: "Share this link to invite participants to the video conference",
     });
     
-    // Automatically navigate to Messages page after inviting
-    setTimeout(() => {
-      navigate('/messages');
-    }, 1500); // Small delay to let user see the toast notification
+    // Don't automatically navigate away - let user stay in the conference
   };
 
   const endCall = () => {

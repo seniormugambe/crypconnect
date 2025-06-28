@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Web3Provider } from '@/contexts/Web3Context';
 import Web3AuthGuard from '@/components/Web3AuthGuard';
 import Web3Sidebar from '@/components/Web3Sidebar';
@@ -21,6 +21,7 @@ import {
   Globe,
   Shield
 } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface IndexProps {
   hasKey: boolean;
@@ -34,6 +35,29 @@ const Index: React.FC<IndexProps> = ({ hasKey, user, checkingKey }) => {
   const [isPictureInPicture, setIsPictureInPicture] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+  const [invitedMeetingId, setInvitedMeetingId] = useState<string | null>(null);
+
+  // Handle URL parameters for video conference invites
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const joinMeeting = urlParams.get('joinMeeting');
+    const meetingId = urlParams.get('meetingId');
+    const inviteCode = urlParams.get('inviteCode');
+    
+    if (joinMeeting === 'true' && meetingId) {
+      setInvitedMeetingId(meetingId);
+      setIsVideoConferenceOpen(true);
+      
+      toast({
+        title: "🎉 Joining Video Conference",
+        description: `You've been invited to join meeting ${meetingId}`,
+      });
+      
+      // Clear URL parameters after processing
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, []);
 
   // Recent meetings as state
   const [recentMeetings, setRecentMeetings] = useState([
@@ -107,6 +131,7 @@ const Index: React.FC<IndexProps> = ({ hasKey, user, checkingKey }) => {
   const handleCloseVideoCall = () => {
     setIsVideoConferenceOpen(false);
     setIsPictureInPicture(false);
+    setInvitedMeetingId(null);
   };
 
   const handleTogglePictureInPicture = () => {
@@ -333,7 +358,7 @@ const Index: React.FC<IndexProps> = ({ hasKey, user, checkingKey }) => {
         {/* Video Conference Component */}
         <VideoConference
           contact={{
-            id: meetingId,
+            id: invitedMeetingId || meetingId,
             name: 'Conference Room',
             avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=conference'
           }}
@@ -342,6 +367,7 @@ const Index: React.FC<IndexProps> = ({ hasKey, user, checkingKey }) => {
           isPictureInPicture={isPictureInPicture}
           onTogglePictureInPicture={handleTogglePictureInPicture}
           isPremium={hasKey}
+          meetingId={invitedMeetingId || meetingId}
         />
 
         {/* Schedule Meeting Modal */}
