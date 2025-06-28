@@ -177,8 +177,7 @@ const Settings = () => {
 
 const queryClient = new QueryClient();
 
-const AppLayout = ({ children }: { children: React.ReactNode }) => {
-  const navigate = useNavigate();
+const AppLayout = ({ children, navigate }: { children: React.ReactNode; navigate: (path: string) => void }) => {
   return (
     <div>
       <nav className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
@@ -351,7 +350,7 @@ const AppWithWeb3 = () => {
 
   return (
     <BrowserRouter>
-      <AppLayout>
+      <AppLayout navigate={navigate}>
         <Routes>
           <Route path="/" element={
             <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-8">
