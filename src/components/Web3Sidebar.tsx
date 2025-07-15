@@ -8,7 +8,7 @@ import { MessageCircle, Settings, User, Wallet, Copy } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useUnlockKey } from "./../hooks/useUnlockKey";
 
-const LOCK_ADDRESS = "0xb2b196026ac3fc1bcbd9037186040acf44ff6b68";
+const LOCK_ADDRESS = "0xBf25682b4A171490ce2CEe5f28417256426805F7";
 const CHAIN_ID = 1;
 
 interface Web3SidebarProps {
